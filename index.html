@@ -159,7 +159,9 @@
             </div>
             <div>
               <label class="block text-sm font-medium mb-1">งานเร่ง (+100)</label>
-              <input type="number" id="rushJob" min="0" value="0" class="w-full p-2 border border-bakery-border rounded-lg bg-bakery-subtle/50 focus:ring-2 focus:ring-bakery-accent outline-none">
+              <button id="btnRushJob" onclick="toggleRushJob()" class="w-full p-2 border-2 border-bakery-border rounded-lg bg-bakery-subtle/50 text-bakery-text hover:border-bakery-accent transition-colors font-medium">
+                ไม่รับงานเร่ง
+              </button>
             </div>
           </div>
         </div>
@@ -327,8 +329,8 @@
       ]},
       { id: 'ych-yeh', name: 'YCH Yeh!', basePrice: 100 },
       { id: 'reactive-gif', name: 'Reactive GIF', basePrice: 500, noMultiplier: true },
-      { id: 'logo-typo', name: 'Logo / Typo', basePrice: 1000, hasAiOption: true },
-      { id: 'video-pv', name: 'Video / PV', isCustom: true },
+      { id: 'logo-typo', name: 'Logo / Typo', basePrice: 1000, hasAiOption: true, noMultiplier: true },
+      { id: 'video-pv', name: 'Video / PV', isCustom: true, noMultiplier: true },
     ];
 
     const STATUS_COLORS = {
@@ -377,7 +379,6 @@
       document.getElementById('propSmall').addEventListener('input', (e) => { state.addOns.propSmall = parseInt(e.target.value) || 0; updateReceipt(); });
       document.getElementById('propLarge').addEventListener('input', (e) => { state.addOns.propLarge = parseInt(e.target.value) || 0; updateReceipt(); });
       document.getElementById('customDesignPrice').addEventListener('input', (e) => { state.addOns.customDesignPrice = parseInt(e.target.value) || 0; updateReceipt(); });
-      document.getElementById('rushJob').addEventListener('input', (e) => { state.addOns.rushJob = parseInt(e.target.value) || 0; updateReceipt(); });
     }
 
     // --- RENDER FUNCTIONS ---
@@ -534,8 +535,8 @@
         if (state.addOns.rushJob > 0) {
           container.innerHTML += `
             <div class="flex justify-between items-start text-sm">
-              <div class="text-bakery-text/80">งานเร่ง x${state.addOns.rushJob}</div>
-              <div class="font-medium">${state.addOns.rushJob * 100}฿</div>
+              <div class="text-bakery-text/80">งานเร่ง</div>
+              <div class="font-medium">100฿</div>
             </div>
           `;
         }
@@ -546,11 +547,14 @@
       document.getElementById('receiptTotal').innerText = total;
       document.getElementById('receiptDeposit').innerText = Math.ceil(total / 2);
       
+      // Check if any selected item forces commercial multiplier text
+      const hasCommercialItem = state.selectedItems.some(item => item.id === 'logo-typo' || item.id === 'video-pv' || item.name === 'Logo / Typo' || item.name === 'Video / PV');
+
       const multiplierNote = document.getElementById('receiptMultiplierNote');
-      if (state.multiplier === 1.5) {
-        multiplierNote.innerText = `*ราคารวม GiveAWay (x1.5) แล้ว`;
-      } else if (state.multiplier === 2) {
+      if (hasCommercialItem || state.multiplier === 2) {
         multiplierNote.innerText = `*ราคารวมเชิงพาณิชย์ (x2) แล้ว`;
+      } else if (state.multiplier === 1.5) {
+        multiplierNote.innerText = `*ราคารวม GiveAWay (x1.5) แล้ว`;
       } else {
         multiplierNote.innerText = '';
       }
@@ -584,7 +588,7 @@
         }
       });
 
-      total += (state.addOns.propSmall * 10) + (state.addOns.propLarge * 20) + state.addOns.customDesignPrice + (state.addOns.rushJob * 100);
+      total += (state.addOns.propSmall * 10) + (state.addOns.propLarge * 20) + state.addOns.customDesignPrice + (state.addOns.rushJob ? 100 : 0);
       return total;
     }
 
@@ -731,7 +735,11 @@
         document.getElementById('propSmall').value = '0';
         document.getElementById('propLarge').value = '0';
         document.getElementById('customDesignPrice').value = '0';
-        document.getElementById('rushJob').value = '0';
+        
+        // Reset rush job button
+        const btnRush = document.getElementById('btnRushJob');
+        btnRush.className = "w-full p-2 border-2 border-bakery-border rounded-lg bg-bakery-subtle/50 text-bakery-text hover:border-bakery-accent transition-colors font-medium";
+        btnRush.innerText = "ไม่รับงานเร่ง";
         
         renderSelectedItems();
         updateReceipt();
@@ -840,6 +848,21 @@
           el.className = "p-3 rounded-xl border-2 border-bakery-border text-bakery-text hover:border-bakery-accent transition-colors";
         }
       });
+      
+      updateReceipt();
+    }
+
+    function toggleRushJob() {
+      state.addOns.rushJob = state.addOns.rushJob ? 0 : 1;
+      
+      const btn = document.getElementById('btnRushJob');
+      if (state.addOns.rushJob) {
+        btn.className = "w-full p-2 border-2 border-bakery-accent rounded-lg bg-bakery-accent text-white transition-colors font-medium";
+        btn.innerText = "รับงานเร่ง (+100฿)";
+      } else {
+        btn.className = "w-full p-2 border-2 border-bakery-border rounded-lg bg-bakery-subtle/50 text-bakery-text hover:border-bakery-accent transition-colors font-medium";
+        btn.innerText = "ไม่รับงานเร่ง";
+      }
       
       updateReceipt();
     }
