@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Commission Manager</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- HTML to Image -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
+  
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind Config -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bakery: {
+              bg: '#FDF5E6',
+              text: '#5D4037',
+              accent: '#D2691E',
+              'accent-hover': '#A0522D',
+              card: '#FFFFFF',
+              border: '#DEB887',
+              subtle: '#FFF8DC'
+            }
+          },
+          fontFamily: {
+            sans: ['"Noto Sans Thai"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Custom CSS -->
+  <style>
+    body {
+      background-color: #FDF5E6;
+      color: #5D4037;
+    }
+    .zigzag-border {
+      position: relative;
+      background: #FFFFFF;
+      border-left: 1px dashed #DEB887;
+      border-right: 1px dashed #DEB887;
+    }
+    .zigzag-border::before, .zigzag-border::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 12px;
+      background-size: 24px 12px;
+      background-repeat: repeat-x;
+    }
+    .zigzag-border::before {
+      top: -12px;
+      background-image: linear-gradient(135deg, #FFFFFF 25%, #FFF8DC 25%),
+        linear-gradient(225deg, #FFFFFF 25%, #FFF8DC 25%);
+    }
+    .zigzag-border::after {
+      bottom: -12px;
+      background-image: linear-gradient(45deg, #FFFFFF 25%, #FFF8DC 25%),
+        linear-gradient(-45deg, #FFFFFF 25%, #FFF8DC 25%);
+    }
+    ::-webkit-scrollbar { width: 10px; }
+    ::-webkit-scrollbar-track { background: #FFF8DC; }
+    ::-webkit-scrollbar-thumb { background: #DEB887; border-radius: 10px; border: 2px solid #FFF8DC; }
+    ::-webkit-scrollbar-thumb:hover { background: #D2691E; }
+    
+    .status-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      border: 1px solid;
+    }
+  </style>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="min-h-screen p-4 md:p-8">
+  <div class="max-w-7xl mx-auto space-y-8">
+    
+    <!-- Header -->
+    <header class="text-center space-y-4">
+      <h1 class="text-4xl md:text-5xl font-bold text-bakery-accent tracking-tight">Commission Manager</h1>
+      <p class="text-bakery-text/80 text-lg">ระบบจัดการคิวและคำนวณราคาคอมมิชชัน</p>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      
+      <!-- Left Column: Form -->
+      <div class="lg:col-span-7 space-y-6">
+        
+        <!-- Client Info Card -->
+        <div class="bg-bakery-card rounded-2xl shadow-sm border border-bakery-border p-6">
+          <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+            <i data-lucide="user" class="w-5 h-5 text-bakery-accent"></i>
+            ข้อมูลลูกค้า
+          </h2>
+          <div class="grid grid-cols-1 gap-4">
+            <div>
+              <label class="block text-sm font-medium mb-1">ชื่อลูกค้า / แอคเคาท์</label>
+              <div class="flex gap-2">
+                <select id="contactType" class="p-2 border border-bakery-border rounded-lg bg-bakery-subtle/50 focus:ring-2 focus:ring-bakery-accent outline-none w-1/3 md:w-1/4">
+                  <option>Facebook</option>
+                  <option>X (Twitter)</option>
+                  <option>Discord</option>
+                  <option>Instagram</option>
+                  <option>Line</option>
+                </select>
+                <input type="text" id="clientName" class="w-full p-2 border border-bakery-border rounded-lg bg-bakery-subtle/50 focus:ring-2 focus:ring-bakery-accent outline-none" placeholder="ชื่อลูกค้า หรือ @แอคเคาท์">
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">เดดไลน์</label>
+              <input type="date" id="deadline" class="w-full p-2 border border-bakery-border rounded-lg bg-bakery-subtle/50 focus:ring-2 focus:ring-bakery-accent outline-none">
+            </div>
+          </div>
+        </div>
+
+        <!-- Commission Types Card -->
+        <div class="bg-bakery-card rounded-2xl shadow-sm border border-bakery-border p-6">
+          <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+            <i data-lucide="plus" class="w-5 h-5 text-bakery-accent"></i>
+            เพิ่มรายการ
+          </h2>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-3" id="commissionTypesContainer">
+            <!-- Buttons will be rendered here -->
+          </div>
+        </div>
+
+        <!-- Add-ons Card -->
+        <div class="bg-bakery-card rounded-2xl shadow-sm border border-bakery-border p-6">
+          <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+            <i data-lucide="plus" class="w-5 h-5 text-bakery-accent"></i>
+            ส่วนเสริม (Add-ons)
+          </h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-medium mb-1">พร็อพเล็ก (+10)</label>
+              <input type="number" id="propSmall" min="0" value="0" class="w-full p-2 border border-bakery-border rounded-lg bg-bakery-subtle/50 focus:ring-2 focus:ring-bakery-accent outline-none">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">พร็อพใหญ่ (+20)</label>
+              <input type="number" id="propLarge" min="0" value="0" class="w-full p-2 border border-bakery-border rounded-lg bg-bakery-subtle/50 focus:ring-2 focus:ring-bakery-accent outline-none">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">ออกแบบชุด/อื่นๆ</label>
+              <input type="number" id="customDesignPrice" min="0" value="0" class="w-full p-2 border border-bakery-border rounded-lg bg-bakery-subtle/50 focus:ring-2 focus:ring-bakery-accent outline-none">
+            </div>
+          </div>
+        </div>
+
+        <!-- Multiplier Card -->
+        <div class="bg-bakery-card rounded-2xl shadow-sm border border-bakery-border p-6">
+          <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+            <i data-lucide="calculator" class="w-5 h-5 text-bakery-accent"></i>
+            ตัวคูณราคา (เชิงพาณิชย์/อื่นๆ)
+          </h2>
+          <div class="grid grid-cols-3 gap-3">
+            <button onclick="setMultiplier(1)" id="btn-mul-1" class="p-3 rounded-xl border-2 border-bakery-accent bg-bakery-accent text-white font-medium transition-colors">x1 (ปกติ)</button>
+            <button onclick="setMultiplier(1.5)" id="btn-mul-1.5" class="p-3 rounded-xl border-2 border-bakery-border text-bakery-text hover:border-bakery-accent transition-colors">x1.5 (พาณิชย์)</button>
+            <button onclick="setMultiplier(2)" id="btn-mul-2" class="p-3 rounded-xl border-2 border-bakery-border text-bakery-text hover:border-bakery-accent transition-colors">x2 (ลิขสิทธิ์)</button>
+          </div>
+        </div>
+
+        <!-- Selected Items Card -->
+        <div class="bg-bakery-card rounded-2xl shadow-sm border border-bakery-border p-6">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+            <h2 class="text-xl font-semibold">รายการที่เลือก</h2>
+          </div>
+          <div id="selectedItemsContainer" class="space-y-3">
+            <div class="text-center py-8 text-bakery-text/50">ยังไม่มีรายการที่เลือก</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Receipt & Queue -->
+      <div class="lg:col-span-5 space-y-6">
+        
+        <!-- Receipt Card -->
+        <div class="bg-bakery-card rounded-2xl shadow-sm border border-bakery-border p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold">ใบเสร็จ</h2>
+            <button onclick="saveAsImage()" class="flex items-center gap-2 px-3 py-1.5 bg-bakery-subtle hover:bg-bakery-border text-bakery-text rounded-lg transition-colors text-sm font-medium">
+              <i data-lucide="download" class="w-4 h-4"></i>
+              บันทึกรูป
+            </button>
+          </div>
+
+          <!-- The Actual Receipt -->
+          <div class="p-4 bg-bakery-subtle rounded-xl flex justify-center">
+            <div id="receiptContent" class="zigzag-border p-8 w-full max-w-sm">
+              <div class="text-center mb-6">
+                <h3 class="text-2xl font-bold text-bakery-accent mb-1">COMMISSION</h3>
+                <p class="text-sm text-bakery-text/70">RECEIPT</p>
+              </div>
+
+              <div class="space-y-2 mb-6 text-sm border-b border-dashed border-bakery-border pb-4">
+                <div class="flex justify-between">
+                  <span class="text-bakery-text/70">Client:</span>
+                  <span class="font-medium" id="receiptClientName">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-bakery-text/70">Date:</span>
+                  <span class="font-medium" id="receiptDate">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-bakery-text/70">Deadline:</span>
+                  <span class="font-medium text-bakery-accent" id="receiptDeadline">-</span>
+                </div>
+              </div>
+
+              <div class="space-y-3 mb-6" id="receiptItemsContainer">
+                <!-- Receipt items will be rendered here -->
+              </div>
+
+              <div class="border-t border-dashed border-bakery-border pt-4">
+                <div class="flex justify-between items-end mb-2">
+                  <span class="font-bold text-lg">TOTAL</span>
+                  <div class="text-right">
+                    <span class="text-2xl font-bold text-bakery-accent" id="receiptTotal">0</span>
+                    <span class="text-sm font-medium ml-1">THB</span>
+                  </div>
+                </div>
+                <div class="flex justify-between items-end text-bakery-text/80">
+                  <span class="font-medium">มัดจำ (Deposit 50%)</span>
+                  <div class="text-right">
+                    <span class="text-lg font-bold" id="receiptDeposit">0</span>
+                    <span class="text-xs font-medium ml-1">THB</span>
+                  </div>
+                </div>
+                <div class="text-xs text-right text-bakery-text/50 mt-1" id="receiptMultiplierNote"></div>
+              </div>
+
+              <div class="mt-8 pt-6 border-t border-bakery-border text-[10px] leading-relaxed text-bakery-text/80 space-y-2">
+                <p class="font-bold text-center text-bakery-accent text-xs mb-3">THANK YU💖 FOR YOUR SUPPORT</p>
+                <p>! เราจะส่งงานที่เสร็จสมบูรณ์แล้วให้เป็นไดรฟ์นะคะ ดังนั้นเราขออนุญาตขออีเมลเพื่อให้ไดร์ฟเป็นไดร์ฟส่วนตัวค่ะ (ป้องกันการที่เราจะส่งลิ้งค์ผิดค่ะ)</p>
+                <p>!!! ถ้ายังไม่ชำระเงิน(ส่งสลิป) ขออนุญาตไม่ส่งงานที่เสร็จสมบูรณ์แล้วให้นะคะ</p>
+                <p>!!!! สามารถนำภาพไปลงโซเชี่ยลมีเดียเพื่อเป็นตัวอย่างคอมมิชชั่นและ Work In Progress ได้มั้ยคะ?? (หากไม่ได้ไม่เป็นไรเลยนะคะ และหากไม่แจ้งขออนุญาตนำไปลงนะคะ)</p>
+              </div>
+            </div>
+          </div>
+
+          <button id="sendToQueueBtn" onclick="sendToQueue()" class="w-full mt-4 py-3 bg-bakery-accent hover:bg-bakery-accent-hover text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+            <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+            ส่งเข้าคิว (Google Sheets)
+          </button>
+        </div>
+
+        <!-- Queue Section -->
+        <div class="bg-bakery-card rounded-2xl shadow-sm border border-bakery-border p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold flex items-center gap-2">
+              <i data-lucide="clock" class="w-5 h-5 text-bakery-accent"></i>
+              สถานะคิว
+            </h2>
+            <button onclick="loadDataFromSheet()" class="p-2 hover:bg-bakery-subtle rounded-lg transition-colors text-bakery-text/70 hover:text-bakery-accent" title="รีเฟรช">
+              <i data-lucide="refresh-cw" class="w-4 h-4" id="refreshIcon"></i>
+            </button>
+          </div>
+
+          <div class="flex gap-2 mb-4 border-b border-bakery-border pb-2">
+            <button onclick="setTab('queue')" id="tabQueue" class="px-4 py-2 font-medium text-bakery-accent border-b-2 border-bakery-accent">คิวปัจจุบัน</button>
+            <button onclick="setTab('archive')" id="tabArchive" class="px-4 py-2 font-medium text-bakery-text/50 hover:text-bakery-text">ประวัติ (Archive)</button>
+          </div>
+
+          <div id="queueContainer" class="space-y-3 max-h-[400px] overflow-y-auto pr-2">
+            <div class="text-center py-8 text-bakery-text/50 flex flex-col items-center gap-2">
+              <i data-lucide="loader-2" class="w-6 h-6 animate-spin"></i>
+              กำลังโหลดข้อมูล...
+            </div>
+          </div>
+        </div>
+
+        <!-- Revenue Summary (Moved below queue) -->
+        <div class="bg-bakery-card rounded-2xl shadow-sm border border-bakery-border p-6 mt-6">
+          <div class="flex items-center gap-2 mb-4">
+            <i data-lucide="trending-up" class="w-5 h-5 text-bakery-accent"></i>
+            <h2 class="text-xl font-semibold">รายรับแยกตามเดือน</h2>
+          </div>
+          <div id="revenueContainer" class="space-y-3">
+            <div class="text-center py-4 text-bakery-text/50">กำลังคำนวณ...</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- CONFIGURATION ---
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyAMZZSeYs-RqSNOBzMBrsKPNcumlWb7IZ07kkY9GibRZj3JjjTAz7BOhzYHqG2uoQ/exec";
+
+    const COMMISSION_TYPES = [
+      { id: 'mini-chibi', name: 'Mini Chibi (Full Body)', basePrice: 180 },
+      { id: 'chibi', name: 'Chibi', options: [
+        { label: 'Head', price: 100 },
+        { label: 'Bust Up', price: 125 },
+        { label: 'Fullbody', price: 200 }
+      ]},
+      { id: 'rough-icon', name: 'Rough Icon', basePrice: 100 },
+      { id: 'little-type', name: 'The Little Type', basePrice: 50, hasFullBodyOption: true },
+      { id: 'dumdui', name: 'DumDui', basePrice: 150 },
+      { id: 'emote', name: 'Emote', noMultiplier: true, options: [
+        { label: '1 รูป', price: 250 },
+        { label: '5 รูป', price: 1225 },
+        { label: '10 รูป', price: 2400 }
+      ]},
+      { id: 'ych-yeh', name: 'YCH Yeh!', basePrice: 100 },
+      { id: 'reactive-gif', name: 'Reactive GIF', basePrice: 500, noMultiplier: true },
+      { id: 'logo-typo', name: 'Logo / Typo', basePrice: 1000, hasAiOption: true },
+      { id: 'video-pv', name: 'Video / PV', isCustom: true },
+    ];
+
+    const STATUS_COLORS = {
+      "รอชำระมัดจำ": "bg-[#FFB6C1] text-[#8B0000] border-[#FF69B4]",
+      "บรีฟงาน": "bg-[#FFE4E1] text-[#CD5C5C] border-[#FFB6C1]",
+      "ร่างภาพ": "bg-[#FFEBCD] text-[#D2691E] border-[#F5DEB3]",
+      "ตัดเส้น": "bg-[#FFF8DC] text-[#DAA520] border-[#EEE8AA]",
+      "ลงสีพื้น": "bg-[#E0FFF0] text-[#2E8B57] border-[#98FB98]",
+      "ลงสี/ขยับ": "bg-[#E6E6FA] text-[#9370DB] border-[#D8BFD8]",
+      "เสร็จสมบูรณ์": "bg-[#F0FFF0] text-[#556B2F] border-[#8FBC8F]",
+    };
+
+    // --- STATE ---
+    let state = {
+      clientName: '',
+      contactType: 'Facebook',
+      deadline: '',
+      selectedItems: [],
+      multiplier: 1,
+      addOns: { propSmall: 0, propLarge: 0, customDesignPrice: 0 },
+      queue: [],
+      archive: [],
+      activeTab: 'queue',
+      isLoading: false,
+      isSyncing: false
+    };
+
+    // --- INITIALIZATION ---
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      renderCommissionTypes();
+      setupEventListeners();
+      updateReceipt();
+      loadDataFromSheet();
+      
+      // Set today's date in receipt
+      document.getElementById('receiptDate').innerText = new Date().toLocaleDateString('th-TH');
+    });
+
+    // --- EVENT LISTENERS ---
+    function setupEventListeners() {
+      document.getElementById('clientName').addEventListener('input', (e) => { state.clientName = e.target.value; updateReceipt(); });
+      document.getElementById('contactType').addEventListener('change', (e) => { state.contactType = e.target.value; updateReceipt(); });
+      document.getElementById('deadline').addEventListener('change', (e) => { state.deadline = e.target.value; updateReceipt(); });
+      
+      document.getElementById('propSmall').addEventListener('input', (e) => { state.addOns.propSmall = parseInt(e.target.value) || 0; updateReceipt(); });
+      document.getElementById('propLarge').addEventListener('input', (e) => { state.addOns.propLarge = parseInt(e.target.value) || 0; updateReceipt(); });
+      document.getElementById('customDesignPrice').addEventListener('input', (e) => { state.addOns.customDesignPrice = parseInt(e.target.value) || 0; updateReceipt(); });
+    }
+
+    // --- RENDER FUNCTIONS ---
+    function renderCommissionTypes() {
+      const container = document.getElementById('commissionTypesContainer');
+      container.innerHTML = '';
+      
+      COMMISSION_TYPES.forEach(type => {
+        const btn = document.createElement('button');
+        btn.className = "p-3 text-sm font-medium border border-bakery-border rounded-xl hover:bg-bakery-subtle hover:border-bakery-accent transition-all text-left flex flex-col gap-1";
+        btn.onclick = () => addItem(type.id);
+        
+        let priceText = type.isCustom ? "ราคาประเมิน" : `เริ่มต้น ${type.basePrice || type.options[0].price}฿`;
+        
+        btn.innerHTML = `
+          <span class="text-bakery-text">${type.name}</span>
+          <span class="text-bakery-accent text-xs">${priceText}</span>
+        `;
+        container.appendChild(btn);
+      });
+    }
+
+    function renderSelectedItems() {
+      const container = document.getElementById('selectedItemsContainer');
+      
+      if (state.selectedItems.length === 0) {
+        container.innerHTML = '<div class="text-center py-8 text-bakery-text/50">ยังไม่มีรายการที่เลือก</div>';
+        return;
+      }
+
+      container.innerHTML = '';
+      state.selectedItems.forEach((item, index) => {
+        const type = COMMISSION_TYPES.find(t => t.name === item.name);
+        
+        const itemDiv = document.createElement('div');
+        itemDiv.className = "p-4 border border-bakery-border rounded-xl bg-bakery-subtle/30 relative group";
+        
+        // Build HTML for options
+        let optionsHtml = '';
+        
+        if (type.options) {
+          optionsHtml += `
+            <select class="p-1.5 text-sm border border-bakery-border rounded bg-white outline-none" onchange="updateItemSubType(${index}, this.value)">
+              ${type.options.map(opt => `<option value="${opt.label}" ${item.subType === opt.label ? 'selected' : ''}>${opt.label} (${opt.price}฿)</option>`).join('')}
+            </select>
+          `;
+        }
+        
+        if (type.hasFullBodyOption) {
+          optionsHtml += `
+            <label class="flex items-center gap-2 text-sm cursor-pointer">
+              <input type="checkbox" class="rounded text-bakery-accent focus:ring-bakery-accent" ${item.isFullBody ? 'checked' : ''} onchange="updateItemFullBody(${index}, this.checked)">
+              <span>Full Body (x2)</span>
+            </label>
+          `;
+        }
+        
+        if (type.hasAiFile) {
+          optionsHtml += `
+            <label class="flex items-center gap-2 text-sm cursor-pointer">
+              <input type="checkbox" class="rounded text-bakery-accent focus:ring-bakery-accent" ${item.hasAiFile ? 'checked' : ''} onchange="updateItemAiFile(${index}, this.checked)">
+              <span>ไฟล์ .ai (+300฿)</span>
+            </label>
+          `;
+        }
+        
+        if (type.isCustom) {
+          optionsHtml += `
+            <div class="flex items-center gap-2">
+              <span class="text-sm">ราคา:</span>
+              <input type="number" class="w-24 p-1.5 text-sm border border-bakery-border rounded bg-white outline-none" value="${item.customPrice || 0}" onchange="updateItemCustomPrice(${index}, this.value)">
+              <span class="text-sm">฿</span>
+            </div>
+          `;
+        }
+
+        itemDiv.innerHTML = `
+          <button onclick="removeItem(${index})" class="absolute top-3 right-3 p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </button>
+          <div class="font-medium text-bakery-accent mb-2 pr-8">${item.name}</div>
+          <div class="flex flex-wrap gap-4 items-center">
+            ${optionsHtml}
+          </div>
+        `;
+        
+        container.appendChild(itemDiv);
+      });
+      
+      lucide.createIcons();
+    }
+
+    function updateReceipt() {
+      // Update Client Info
+      document.getElementById('receiptClientName').innerText = state.clientName ? `${state.contactType}: ${state.clientName}` : '-';
+      
+      const deadlineText = state.deadline ? new Date(state.deadline).toLocaleDateString('th-TH') : '-';
+      document.getElementById('receiptDeadline').innerText = deadlineText;
+      
+      // Update Items
+      const container = document.getElementById('receiptItemsContainer');
+      container.innerHTML = '';
+      
+      if (state.selectedItems.length === 0 && state.addOns.propSmall === 0 && state.addOns.propLarge === 0 && state.addOns.customDesignPrice === 0) {
+        container.innerHTML = '<div class="text-center text-bakery-text/50 text-xs py-2">No items</div>';
+      } else {
+        state.selectedItems.forEach(item => {
+          let itemPrice = item.basePrice;
+          let details = [];
+          
+          if (item.subType) details.push(item.subType);
+          if (item.isFullBody) { itemPrice *= 2; details.push('Full Body'); }
+          if (item.hasAiFile) { itemPrice += 300; details.push('+ .ai file'); }
+          if (item.customPrice) itemPrice = item.customPrice;
+          
+          let displayPrice = item.noMultiplier ? itemPrice : itemPrice * state.multiplier;
+          
+          container.innerHTML += `
+            <div class="flex justify-between items-start">
+              <div>
+                <div class="font-medium">${item.name}</div>
+                ${details.length > 0 ? `<div class="text-xs text-bakery-text/60">${details.join(', ')}</div>` : ''}
+              </div>
+              <div class="font-medium">${displayPrice}฿</div>
+            </div>
+          `;
+        });
+        
+        // Add-ons
+        if (state.addOns.propSmall > 0) {
+          container.innerHTML += `
+            <div class="flex justify-between items-start text-sm">
+              <div class="text-bakery-text/80">Prop (Small) x${state.addOns.propSmall}</div>
+              <div class="font-medium">${state.addOns.propSmall * 10}฿</div>
+            </div>
+          `;
+        }
+        if (state.addOns.propLarge > 0) {
+          container.innerHTML += `
+            <div class="flex justify-between items-start text-sm">
+              <div class="text-bakery-text/80">Prop (Large) x${state.addOns.propLarge}</div>
+              <div class="font-medium">${state.addOns.propLarge * 20}฿</div>
+            </div>
+          `;
+        }
+        if (state.addOns.customDesignPrice > 0) {
+          container.innerHTML += `
+            <div class="flex justify-between items-start text-sm">
+              <div class="text-bakery-text/80">Custom Design</div>
+              <div class="font-medium">${state.addOns.customDesignPrice}฿</div>
+            </div>
+          `;
+        }
+      }
+      
+      // Update Total
+      const total = calculateTotal();
+      document.getElementById('receiptTotal').innerText = total;
+      document.getElementById('receiptDeposit').innerText = Math.ceil(total / 2);
+      
+      const multiplierNote = document.getElementById('receiptMultiplierNote');
+      if (state.multiplier > 1) {
+        multiplierNote.innerText = `*ราคารวมตัวคูณ x${state.multiplier} แล้ว`;
+      } else {
+        multiplierNote.innerText = '';
+      }
+      
+      // Update Button State
+      const btn = document.getElementById('sendToQueueBtn');
+      if (!state.clientName || state.selectedItems.length === 0 || state.isSyncing) {
+        btn.disabled = true;
+        btn.title = "กรุณากรอกชื่อลูกค้าและเลือกรายการอย่างน้อย 1 รายการ";
+        btn.classList.add('opacity-50', 'cursor-not-allowed');
+      } else {
+        btn.disabled = false;
+        btn.title = "";
+        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+      }
+    }
+
+    // --- LOGIC FUNCTIONS ---
+    function calculateTotal() {
+      let total = 0;
+      state.selectedItems.forEach(item => {
+        let itemPrice = item.basePrice;
+        if (item.isFullBody) itemPrice *= 2;
+        if (item.hasAiFile) itemPrice += 300;
+        if (item.customPrice) itemPrice = item.customPrice;
+
+        if (item.noMultiplier) {
+          total += itemPrice;
+        } else {
+          total += itemPrice * state.multiplier;
+        }
+      });
+
+      total += (state.addOns.propSmall * 10) + (state.addOns.propLarge * 20) + state.addOns.customDesignPrice;
+      return total;
+    }
+
+    function addItem(typeId) {
+      const type = COMMISSION_TYPES.find(t => t.id === typeId);
+      if (!type) return;
+
+      const newItem = {
+        id: Math.random().toString(36).substr(2, 9),
+        name: type.name,
+        basePrice: type.basePrice || 0,
+        noMultiplier: type.noMultiplier || false,
+      };
+
+      if (type.options) {
+        newItem.subType = type.options[0].label;
+        newItem.basePrice = type.options[0].price;
+      }
+
+      state.selectedItems.push(newItem);
+      renderSelectedItems();
+      updateReceipt();
+    }
+
+    function removeItem(index) {
+      state.selectedItems.splice(index, 1);
+      renderSelectedItems();
+      updateReceipt();
+    }
+
+    function updateItemSubType(index, value) {
+      const item = state.selectedItems[index];
+      const type = COMMISSION_TYPES.find(t => t.name === item.name);
+      const option = type.options.find(o => o.label === value);
+      if (option) {
+        item.subType = option.label;
+        item.basePrice = option.price;
+        updateReceipt();
+      }
+    }
+
+    function updateItemFullBody(index, isChecked) {
+      state.selectedItems[index].isFullBody = isChecked;
+      updateReceipt();
+    }
+
+    function updateItemAiFile(index, isChecked) {
+      state.selectedItems[index].hasAiFile = isChecked;
+      updateReceipt();
+    }
+
+    function updateItemCustomPrice(index, value) {
+      state.selectedItems[index].customPrice = parseInt(value) || 0;
+      updateReceipt();
+    }
+
+    function saveAsImage() {
+      const node = document.getElementById('receiptContent');
+      window.htmlToImage.toPng(node, {
+        backgroundColor: '#FFFFFF',
+        pixelRatio: 2,
+        style: { transform: 'scale(1)', margin: '0' } // Fix right-side cropping
+      })
+      .then(function (dataUrl) {
+        const link = document.createElement('a');
+        link.download = `receipt-${state.clientName || 'order'}.png`;
+        link.href = dataUrl;
+        link.click();
+      })
+      .catch(function (error) {
+        console.error('oops, something went wrong!', error);
+        alert('เกิดข้อผิดพลาดในการบันทึกรูปภาพ');
+      });
+    }
+
+    // --- API FUNCTIONS ---
+    async function loadDataFromSheet() {
+      if (!GOOGLE_SCRIPT_URL) return;
+      
+      const icon = document.getElementById('refreshIcon');
+      icon.classList.add('animate-spin');
+      
+      try {
+        const res = await fetch(GOOGLE_SCRIPT_URL);
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        
+        const text = await res.text();
+        const data = JSON.parse(text);
+        
+        if (data.queue) state.queue = data.queue;
+        if (data.archive) state.archive = data.archive;
+        
+        renderQueue();
+        calculateTotalRevenue();
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        document.getElementById('queueContainer').innerHTML = '<div class="text-center py-8 text-red-500">ไม่สามารถโหลดข้อมูลได้ (CORS Error หรือ URL ผิด)</div>';
+      } finally {
+        icon.classList.remove('animate-spin');
+      }
+    }
+
+    async function sendToQueue() {
+      if (!GOOGLE_SCRIPT_URL) return;
+      
+      const btn = document.getElementById('sendToQueueBtn');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> กำลังส่งข้อมูล...';
+      btn.disabled = true;
+      state.isSyncing = true;
+      lucide.createIcons();
+
+      const newOrder = {
+        id: Math.random().toString(36).substr(2, 9),
+        clientName: state.clientName,
+        contactType: state.contactType,
+        items: state.selectedItems,
+        multiplier: state.multiplier,
+        addOns: state.addOns,
+        totalPrice: calculateTotal(),
+        date: new Date().toISOString(),
+        deadline: state.deadline,
+        status: "รอชำระมัดจำ"
+      };
+
+      try {
+        await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors', 
+          headers: {
+            'Content-Type': 'text/plain;charset=utf-8',
+          },
+          body: JSON.stringify({ action: 'ADD_ORDER', order: newOrder })
+        });
+        
+        // Reset form
+        state.clientName = '';
+        state.deadline = '';
+        state.selectedItems = [];
+        state.addOns = { propSmall: 0, propLarge: 0, customDesignPrice: 0 };
+        
+        document.getElementById('clientName').value = '';
+        document.getElementById('deadline').value = '';
+        document.getElementById('propSmall').value = '0';
+        document.getElementById('propLarge').value = '0';
+        document.getElementById('customDesignPrice').value = '0';
+        
+        renderSelectedItems();
+        updateReceipt();
+        
+        alert('ส่งเข้าคิวเรียบร้อยแล้ว!');
+        setTimeout(loadDataFromSheet, 1500);
+        
+      } catch (error) {
+        console.error("Error syncing data:", error);
+        alert('เกิดข้อผิดพลาดในการส่งข้อมูล');
+      } finally {
+        state.isSyncing = false;
+        btn.innerHTML = originalText;
+        updateReceipt(); // Re-evaluate button disabled state
+        lucide.createIcons();
+      }
+    }
+
+    function setTab(tab) {
+      state.activeTab = tab;
+      
+      const tabQueue = document.getElementById('tabQueue');
+      const tabArchive = document.getElementById('tabArchive');
+      
+      if (tab === 'queue') {
+        tabQueue.className = "px-4 py-2 font-medium text-bakery-accent border-b-2 border-bakery-accent";
+        tabArchive.className = "px-4 py-2 font-medium text-bakery-text/50 hover:text-bakery-text";
+      } else {
+        tabArchive.className = "px-4 py-2 font-medium text-bakery-accent border-b-2 border-bakery-accent";
+        tabQueue.className = "px-4 py-2 font-medium text-bakery-text/50 hover:text-bakery-text";
+      }
+      
+      renderQueue();
+    }
+
+    function renderQueue() {
+      const container = document.getElementById('queueContainer');
+      const data = state.activeTab === 'queue' ? state.queue : state.archive;
+      
+      if (data.length === 0) {
+        container.innerHTML = '<div class="text-center py-8 text-bakery-text/50">ไม่มีข้อมูล</div>';
+        return;
+      }
+      
+      container.innerHTML = '';
+      data.forEach(order => {
+        const statusColor = STATUS_COLORS[order.status] || "bg-gray-100 text-gray-800 border-gray-200";
+        const deadlineText = order.deadline ? new Date(order.deadline).toLocaleDateString('th-TH') : 'ไม่ระบุ';
+        
+        const itemNames = order.items ? order.items.map(i => i.name).join(', ') : 'ไม่มีรายการ';
+        
+        container.innerHTML += `
+          <div class="p-4 border border-bakery-border rounded-xl bg-white hover:shadow-md transition-shadow">
+            <div class="flex justify-between items-start mb-2">
+              <div>
+                <h3 class="font-bold text-lg">${order.clientName}</h3>
+                <div class="text-sm text-bakery-text/70 flex items-center gap-1">
+                  <i data-lucide="message-square" class="w-3 h-3"></i>
+                  ${order.contactType}
+                </div>
+              </div>
+              <span class="status-badge ${statusColor}">${order.status}</span>
+            </div>
+            
+            <div class="text-sm mb-3 text-bakery-text/80 line-clamp-1">
+              ${itemNames}
+            </div>
+            
+            <div class="flex justify-between items-center pt-3 border-t border-bakery-subtle text-sm">
+              <div class="flex items-center gap-1 text-bakery-accent font-medium">
+                <i data-lucide="calendar" class="w-4 h-4"></i>
+                เดดไลน์: ${deadlineText}
+              </div>
+              <div class="font-bold">
+                ${order.totalPrice}฿
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      lucide.createIcons();
+    }
+
+    function setMultiplier(val) {
+      state.multiplier = val;
+      
+      // Update buttons
+      const btns = [1, 1.5, 2];
+      btns.forEach(b => {
+        const el = document.getElementById(`btn-mul-${b}`);
+        if (b === val) {
+          el.className = "p-3 rounded-xl border-2 border-bakery-accent bg-bakery-accent text-white font-medium transition-colors";
+        } else {
+          el.className = "p-3 rounded-xl border-2 border-bakery-border text-bakery-text hover:border-bakery-accent transition-colors";
+        }
+      });
+      
+      updateReceipt();
+    }
+
+    function calculateTotalRevenue() {
+      const monthlyRevenue = {};
+
+      const processOrder = (order) => {
+        if (!order.date) return;
+        const date = new Date(order.date);
+        const monthYear = date.toLocaleDateString('th-TH', { month: 'long', year: 'numeric' });
+        
+        if (!monthlyRevenue[monthYear]) {
+          monthlyRevenue[monthYear] = 0;
+        }
+        monthlyRevenue[monthYear] += Number(order.totalPrice) || 0;
+      };
+
+      // Sum from archive
+      state.archive.forEach(processOrder);
+      // Sum from queue if status is finished
+      state.queue.forEach(order => {
+        if (order.status === "เสร็จสมบูรณ์") {
+          processOrder(order);
+        }
+      });
+      
+      const container = document.getElementById('revenueContainer');
+      if (Object.keys(monthlyRevenue).length === 0) {
+        container.innerHTML = '<div class="text-center py-4 text-bakery-text/50">ยังไม่มีรายรับ</div>';
+        return;
+      }
+
+      container.innerHTML = '';
+      for (const [month, total] of Object.entries(monthlyRevenue)) {
+        container.innerHTML += `
+          <div class="flex justify-between items-center p-3 border border-bakery-border rounded-xl bg-bakery-subtle/30">
+            <span class="font-medium">${month}</span>
+            <span class="font-bold text-bakery-accent">${total.toLocaleString()} ฿</span>
+          </div>
+        `;
+      }
+    }
+  </script>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
