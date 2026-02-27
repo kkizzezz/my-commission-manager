@@ -23,7 +23,7 @@ import { cn, CommissionItem, AddOn, Order, QueueStatus, STATUS_COLORS } from './
 
 // --- CONFIGURATION ---
 // ⚠️ PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE ⚠️
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyAMZZSeYs-RqSNOBzMBrsKPNcumlWb7IZ07kkY9GibRZj3JjjTAz7BOhzYHqG2uoQ/exec"; 
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxNIycJfoD-08NGnuvuPlyIJMy5xAdFUzdzjp-mkXABisG6ignNUhogtOv6YFSp8seH/exec"; 
 
 // --- Constants ---
 const COMMISSION_TYPES = [
