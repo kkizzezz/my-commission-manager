@@ -304,7 +304,7 @@
 
   <script>
     // --- CONFIGURATION ---
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwqL3bBos0DNlIrn8mbQBuWRPTOCQ35hFAz4_A1DZ2lqsUcCV-hpmbDHMoe7PBt7dVI/exec";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzNlol8pij0YL2rZIIRiPB6IeNmeI2f8zKBJoHGlL2MrBkxuIx_NyAu_vgKfR-RE_rU/exec";
 
     const COMMISSION_TYPES = [
       { id: 'mini-chibi', name: 'Mini Chibi (Full Body)', basePrice: 180 },
@@ -767,6 +767,10 @@
         
         const itemNames = order.items ? order.items.map(i => i.name).join(', ') : 'ไม่มีรายการ';
         
+        const statusOptions = Object.keys(STATUS_COLORS).map(status => {
+          return `<option value="${status}" ${order.status === status ? 'selected' : ''} class="bg-white text-bakery-text">${status}</option>`;
+        }).join('');
+        
         container.innerHTML += `
           <div class="p-4 border border-bakery-border rounded-xl bg-white hover:shadow-md transition-shadow">
             <div class="flex justify-between items-start mb-2">
@@ -777,7 +781,9 @@
                   ${order.contactType}
                 </div>
               </div>
-              <span class="status-badge ${statusColor}">${order.status}</span>
+              <select onchange="updateOrderStatus('${order.id}', this.value)" class="status-badge ${statusColor} outline-none cursor-pointer text-center">
+                ${statusOptions}
+              </select>
             </div>
             
             <div class="text-sm mb-3 text-bakery-text/80 line-clamp-1">
@@ -815,6 +821,41 @@
       });
       
       updateReceipt();
+    }
+
+    async function updateOrderStatus(id, newStatus) {
+      // Find order in queue or archive
+      let order = state.queue.find(o => o.id === id) || state.archive.find(o => o.id === id);
+      if (!order) return;
+
+      const oldStatus = order.status;
+      order.status = newStatus;
+
+      // Move between queue and archive if necessary
+      if (newStatus === "เสร็จสมบูรณ์" && oldStatus !== "เสร็จสมบูรณ์") {
+        state.queue = state.queue.filter(o => o.id !== id);
+        state.archive.push(order);
+      } else if (newStatus !== "เสร็จสมบูรณ์" && oldStatus === "เสร็จสมบูรณ์") {
+        state.archive = state.archive.filter(o => o.id !== id);
+        state.queue.push(order);
+      }
+
+      // Optimistic update
+      renderQueue();
+      calculateTotalRevenue();
+
+      try {
+        await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'UPDATE_STATUS', id: id, status: newStatus })
+        });
+      } catch (error) {
+        console.error("Error updating status:", error);
+        alert('เกิดข้อผิดพลาดในการอัปเดตสถานะใน Google Sheets');
+        loadDataFromSheet(); // Revert on error
+      }
     }
 
     function calculateTotalRevenue() {
