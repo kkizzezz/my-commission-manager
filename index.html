@@ -64,15 +64,13 @@
     }
     .zigzag-border::before {
       top: -12px;
-      background-image: linear-gradient(135deg, #FFFFFF 25%, transparent 25%),
-        linear-gradient(225deg, #FFFFFF 25%, transparent 25%);
-      filter: drop-shadow(0 -1px 0 #DEB887);
+      background-image: linear-gradient(135deg, #FFFFFF 25%, #FFF8DC 25%),
+        linear-gradient(225deg, #FFFFFF 25%, #FFF8DC 25%);
     }
     .zigzag-border::after {
       bottom: -12px;
-      background-image: linear-gradient(45deg, #FFFFFF 25%, transparent 25%),
-        linear-gradient(-45deg, #FFFFFF 25%, transparent 25%);
-      filter: drop-shadow(0 1px 0 #DEB887);
+      background-image: linear-gradient(45deg, #FFFFFF 25%, #FFF8DC 25%),
+        linear-gradient(-45deg, #FFFFFF 25%, #FFF8DC 25%);
     }
     ::-webkit-scrollbar { width: 10px; }
     ::-webkit-scrollbar-track { background: #FFF8DC; }
@@ -87,7 +85,6 @@
       border: 1px solid;
     }
   </style>
-<link rel="stylesheet" href="/index.css">
 </head>
 <body class="min-h-screen p-4 md:p-8">
   <div class="max-w-7xl mx-auto space-y-8">
@@ -109,35 +106,23 @@
             <i data-lucide="user" class="w-5 h-5 text-bakery-accent"></i>
             ข้อมูลลูกค้า
           </h2>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 gap-4">
             <div>
-              <label class="block text-sm font-medium mb-1">ชื่อลูกค้า</label>
-              <input type="text" id="clientName" class="w-full p-2 border border-bakery-border rounded-lg bg-bakery-subtle/50 focus:ring-2 focus:ring-bakery-accent outline-none" placeholder="ชื่อลูกค้า">
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-1">ช่องทางติดต่อ</label>
+              <label class="block text-sm font-medium mb-1">ชื่อลูกค้า / แอคเคาท์</label>
               <div class="flex gap-2">
-                <select id="contactType" class="p-2 border border-bakery-border rounded-lg bg-bakery-subtle/50 focus:ring-2 focus:ring-bakery-accent outline-none">
+                <select id="contactType" class="p-2 border border-bakery-border rounded-lg bg-bakery-subtle/50 focus:ring-2 focus:ring-bakery-accent outline-none w-1/3 md:w-1/4">
                   <option>Facebook</option>
                   <option>X (Twitter)</option>
                   <option>Discord</option>
                   <option>Instagram</option>
                   <option>Line</option>
                 </select>
-                <input type="text" id="clientContact" class="w-full p-2 border border-bakery-border rounded-lg bg-bakery-subtle/50 focus:ring-2 focus:ring-bakery-accent outline-none" placeholder="ชื่อแอคเคาท์">
+                <input type="text" id="clientName" class="w-full p-2 border border-bakery-border rounded-lg bg-bakery-subtle/50 focus:ring-2 focus:ring-bakery-accent outline-none" placeholder="ชื่อลูกค้า หรือ @แอคเคาท์">
               </div>
             </div>
             <div>
               <label class="block text-sm font-medium mb-1">เดดไลน์</label>
               <input type="date" id="deadline" class="w-full p-2 border border-bakery-border rounded-lg bg-bakery-subtle/50 focus:ring-2 focus:ring-bakery-accent outline-none">
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-1">ตัวคูณราคา (เชิงพาณิชย์/อื่นๆ)</label>
-              <select id="multiplier" class="w-full p-2 border border-bakery-border rounded-lg bg-bakery-subtle/50 focus:ring-2 focus:ring-bakery-accent outline-none">
-                <option value="1">x1 (ราคาปกติ)</option>
-                <option value="1.5">x1.5 (เชิงพาณิชย์)</option>
-                <option value="2">x2 (ลิขสิทธิ์)</option>
-              </select>
             </div>
           </div>
         </div>
@@ -150,14 +135,6 @@
           </h2>
           <div class="grid grid-cols-2 md:grid-cols-3 gap-3" id="commissionTypesContainer">
             <!-- Buttons will be rendered here -->
-          </div>
-        </div>
-
-        <!-- Selected Items Card -->
-        <div class="bg-bakery-card rounded-2xl shadow-sm border border-bakery-border p-6">
-          <h2 class="text-xl font-semibold mb-4">รายการที่เลือก</h2>
-          <div id="selectedItemsContainer" class="space-y-3">
-            <div class="text-center py-8 text-bakery-text/50">ยังไม่มีรายการที่เลือก</div>
           </div>
         </div>
 
@@ -183,6 +160,29 @@
           </div>
         </div>
 
+        <!-- Multiplier Card -->
+        <div class="bg-bakery-card rounded-2xl shadow-sm border border-bakery-border p-6">
+          <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+            <i data-lucide="calculator" class="w-5 h-5 text-bakery-accent"></i>
+            ตัวคูณราคา (เชิงพาณิชย์/อื่นๆ)
+          </h2>
+          <div class="grid grid-cols-3 gap-3">
+            <button onclick="setMultiplier(1)" id="btn-mul-1" class="p-3 rounded-xl border-2 border-bakery-accent bg-bakery-accent text-white font-medium transition-colors">x1 (ปกติ)</button>
+            <button onclick="setMultiplier(1.5)" id="btn-mul-1.5" class="p-3 rounded-xl border-2 border-bakery-border text-bakery-text hover:border-bakery-accent transition-colors">x1.5 (พาณิชย์)</button>
+            <button onclick="setMultiplier(2)" id="btn-mul-2" class="p-3 rounded-xl border-2 border-bakery-border text-bakery-text hover:border-bakery-accent transition-colors">x2 (ลิขสิทธิ์)</button>
+          </div>
+        </div>
+
+        <!-- Selected Items Card -->
+        <div class="bg-bakery-card rounded-2xl shadow-sm border border-bakery-border p-6">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+            <h2 class="text-xl font-semibold">รายการที่เลือก</h2>
+          </div>
+          <div id="selectedItemsContainer" class="space-y-3">
+            <div class="text-center py-8 text-bakery-text/50">ยังไม่มีรายการที่เลือก</div>
+          </div>
+        </div>
+
       </div>
 
       <!-- Right Column: Receipt & Queue -->
@@ -199,8 +199,8 @@
           </div>
 
           <!-- The Actual Receipt -->
-          <div class="p-4 bg-bakery-subtle rounded-xl">
-            <div id="receiptContent" class="zigzag-border p-8 mx-auto max-w-sm">
+          <div class="p-4 bg-bakery-subtle rounded-xl flex justify-center">
+            <div id="receiptContent" class="zigzag-border p-8 w-full max-w-sm">
               <div class="text-center mb-6">
                 <h3 class="text-2xl font-bold text-bakery-accent mb-1">COMMISSION</h3>
                 <p class="text-sm text-bakery-text/70">RECEIPT</p>
@@ -210,10 +210,6 @@
                 <div class="flex justify-between">
                   <span class="text-bakery-text/70">Client:</span>
                   <span class="font-medium" id="receiptClientName">-</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-bakery-text/70">Contact:</span>
-                  <span class="font-medium" id="receiptClientContact">-</span>
                 </div>
                 <div class="flex justify-between">
                   <span class="text-bakery-text/70">Date:</span>
@@ -230,14 +226,28 @@
               </div>
 
               <div class="border-t border-dashed border-bakery-border pt-4">
-                <div class="flex justify-between items-end">
+                <div class="flex justify-between items-end mb-2">
                   <span class="font-bold text-lg">TOTAL</span>
                   <div class="text-right">
                     <span class="text-2xl font-bold text-bakery-accent" id="receiptTotal">0</span>
                     <span class="text-sm font-medium ml-1">THB</span>
                   </div>
                 </div>
+                <div class="flex justify-between items-end text-bakery-text/80">
+                  <span class="font-medium">มัดจำ (Deposit 50%)</span>
+                  <div class="text-right">
+                    <span class="text-lg font-bold" id="receiptDeposit">0</span>
+                    <span class="text-xs font-medium ml-1">THB</span>
+                  </div>
+                </div>
                 <div class="text-xs text-right text-bakery-text/50 mt-1" id="receiptMultiplierNote"></div>
+              </div>
+
+              <div class="mt-8 pt-6 border-t border-bakery-border text-[10px] leading-relaxed text-bakery-text/80 space-y-2">
+                <p class="font-bold text-center text-bakery-accent text-xs mb-3">THANK YU💖 FOR YOUR SUPPORT</p>
+                <p>! เราจะส่งงานที่เสร็จสมบูรณ์แล้วให้เป็นไดรฟ์นะคะ ดังนั้นเราขออนุญาตขออีเมลเพื่อให้ไดร์ฟเป็นไดร์ฟส่วนตัวค่ะ (ป้องกันการที่เราจะส่งลิ้งค์ผิดค่ะ)</p>
+                <p>!!! ถ้ายังไม่ชำระเงิน(ส่งสลิป) ขออนุญาตไม่ส่งงานที่เสร็จสมบูรณ์แล้วให้นะคะ</p>
+                <p>!!!! สามารถนำภาพไปลงโซเชี่ยลมีเดียเพื่อเป็นตัวอย่างคอมมิชชั่นและ Work In Progress ได้มั้ยคะ?? (หากไม่ได้ไม่เป็นไรเลยนะคะ และหากไม่แจ้งขออนุญาตนำไปลงนะคะ)</p>
               </div>
             </div>
           </div>
@@ -270,6 +280,17 @@
               <i data-lucide="loader-2" class="w-6 h-6 animate-spin"></i>
               กำลังโหลดข้อมูล...
             </div>
+          </div>
+        </div>
+
+        <!-- Revenue Summary (Moved below queue) -->
+        <div class="bg-bakery-card rounded-2xl shadow-sm border border-bakery-border p-6 mt-6">
+          <div class="flex items-center gap-2 mb-4">
+            <i data-lucide="trending-up" class="w-5 h-5 text-bakery-accent"></i>
+            <h2 class="text-xl font-semibold">รายรับแยกตามเดือน</h2>
+          </div>
+          <div id="revenueContainer" class="space-y-3">
+            <div class="text-center py-4 text-bakery-text/50">กำลังคำนวณ...</div>
           </div>
         </div>
 
@@ -315,7 +336,6 @@
     // --- STATE ---
     let state = {
       clientName: '',
-      clientContact: '',
       contactType: 'Facebook',
       deadline: '',
       selectedItems: [],
@@ -343,10 +363,8 @@
     // --- EVENT LISTENERS ---
     function setupEventListeners() {
       document.getElementById('clientName').addEventListener('input', (e) => { state.clientName = e.target.value; updateReceipt(); });
-      document.getElementById('clientContact').addEventListener('input', (e) => { state.clientContact = e.target.value; updateReceipt(); });
       document.getElementById('contactType').addEventListener('change', (e) => { state.contactType = e.target.value; updateReceipt(); });
       document.getElementById('deadline').addEventListener('change', (e) => { state.deadline = e.target.value; updateReceipt(); });
-      document.getElementById('multiplier').addEventListener('change', (e) => { state.multiplier = parseFloat(e.target.value); updateReceipt(); });
       
       document.getElementById('propSmall').addEventListener('input', (e) => { state.addOns.propSmall = parseInt(e.target.value) || 0; updateReceipt(); });
       document.getElementById('propLarge').addEventListener('input', (e) => { state.addOns.propLarge = parseInt(e.target.value) || 0; updateReceipt(); });
@@ -445,8 +463,7 @@
 
     function updateReceipt() {
       // Update Client Info
-      document.getElementById('receiptClientName').innerText = state.clientName || '-';
-      document.getElementById('receiptClientContact').innerText = state.clientContact ? `${state.contactType}: ${state.clientContact}` : '-';
+      document.getElementById('receiptClientName').innerText = state.clientName ? `${state.contactType}: ${state.clientName}` : '-';
       
       const deadlineText = state.deadline ? new Date(state.deadline).toLocaleDateString('th-TH') : '-';
       document.getElementById('receiptDeadline').innerText = deadlineText;
@@ -510,6 +527,7 @@
       // Update Total
       const total = calculateTotal();
       document.getElementById('receiptTotal').innerText = total;
+      document.getElementById('receiptDeposit').innerText = Math.ceil(total / 2);
       
       const multiplierNote = document.getElementById('receiptMultiplierNote');
       if (state.multiplier > 1) {
@@ -522,8 +540,12 @@
       const btn = document.getElementById('sendToQueueBtn');
       if (!state.clientName || state.selectedItems.length === 0 || state.isSyncing) {
         btn.disabled = true;
+        btn.title = "กรุณากรอกชื่อลูกค้าและเลือกรายการอย่างน้อย 1 รายการ";
+        btn.classList.add('opacity-50', 'cursor-not-allowed');
       } else {
         btn.disabled = false;
+        btn.title = "";
+        btn.classList.remove('opacity-50', 'cursor-not-allowed');
       }
     }
 
@@ -605,6 +627,7 @@
       window.htmlToImage.toPng(node, {
         backgroundColor: '#FFFFFF',
         pixelRatio: 2,
+        style: { transform: 'scale(1)', margin: '0' } // Fix right-side cropping
       })
       .then(function (dataUrl) {
         const link = document.createElement('a');
@@ -636,6 +659,7 @@
         if (data.archive) state.archive = data.archive;
         
         renderQueue();
+        calculateTotalRevenue();
       } catch (error) {
         console.error("Error fetching data:", error);
         document.getElementById('queueContainer').innerHTML = '<div class="text-center py-8 text-red-500">ไม่สามารถโหลดข้อมูลได้ (CORS Error หรือ URL ผิด)</div>';
@@ -657,7 +681,6 @@
       const newOrder = {
         id: Math.random().toString(36).substr(2, 9),
         clientName: state.clientName,
-        clientContact: state.clientContact,
         contactType: state.contactType,
         items: state.selectedItems,
         multiplier: state.multiplier,
@@ -680,13 +703,11 @@
         
         // Reset form
         state.clientName = '';
-        state.clientContact = '';
         state.deadline = '';
         state.selectedItems = [];
         state.addOns = { propSmall: 0, propLarge: 0, customDesignPrice: 0 };
         
         document.getElementById('clientName').value = '';
-        document.getElementById('clientContact').value = '';
         document.getElementById('deadline').value = '';
         document.getElementById('propSmall').value = '0';
         document.getElementById('propLarge').value = '0';
@@ -696,7 +717,7 @@
         updateReceipt();
         
         alert('ส่งเข้าคิวเรียบร้อยแล้ว!');
-        loadDataFromSheet();
+        setTimeout(loadDataFromSheet, 1500);
         
       } catch (error) {
         console.error("Error syncing data:", error);
@@ -749,7 +770,7 @@
                 <h3 class="font-bold text-lg">${order.clientName}</h3>
                 <div class="text-sm text-bakery-text/70 flex items-center gap-1">
                   <i data-lucide="message-square" class="w-3 h-3"></i>
-                  ${order.contactType}: ${order.clientContact || '-'}
+                  ${order.contactType}
                 </div>
               </div>
               <span class="status-badge ${statusColor}">${order.status}</span>
@@ -774,7 +795,63 @@
       
       lucide.createIcons();
     }
+
+    function setMultiplier(val) {
+      state.multiplier = val;
+      
+      // Update buttons
+      const btns = [1, 1.5, 2];
+      btns.forEach(b => {
+        const el = document.getElementById(`btn-mul-${b}`);
+        if (b === val) {
+          el.className = "p-3 rounded-xl border-2 border-bakery-accent bg-bakery-accent text-white font-medium transition-colors";
+        } else {
+          el.className = "p-3 rounded-xl border-2 border-bakery-border text-bakery-text hover:border-bakery-accent transition-colors";
+        }
+      });
+      
+      updateReceipt();
+    }
+
+    function calculateTotalRevenue() {
+      const monthlyRevenue = {};
+
+      const processOrder = (order) => {
+        if (!order.date) return;
+        const date = new Date(order.date);
+        const monthYear = date.toLocaleDateString('th-TH', { month: 'long', year: 'numeric' });
+        
+        if (!monthlyRevenue[monthYear]) {
+          monthlyRevenue[monthYear] = 0;
+        }
+        monthlyRevenue[monthYear] += Number(order.totalPrice) || 0;
+      };
+
+      // Sum from archive
+      state.archive.forEach(processOrder);
+      // Sum from queue if status is finished
+      state.queue.forEach(order => {
+        if (order.status === "เสร็จสมบูรณ์") {
+          processOrder(order);
+        }
+      });
+      
+      const container = document.getElementById('revenueContainer');
+      if (Object.keys(monthlyRevenue).length === 0) {
+        container.innerHTML = '<div class="text-center py-4 text-bakery-text/50">ยังไม่มีรายรับ</div>';
+        return;
+      }
+
+      container.innerHTML = '';
+      for (const [month, total] of Object.entries(monthlyRevenue)) {
+        container.innerHTML += `
+          <div class="flex justify-between items-center p-3 border border-bakery-border rounded-xl bg-bakery-subtle/30">
+            <span class="font-medium">${month}</span>
+            <span class="font-bold text-bakery-accent">${total.toLocaleString()} ฿</span>
+          </div>
+        `;
+      }
+    }
   </script>
-<script type="module" src="/index.tsx"></script>
 </body>
 </html>
