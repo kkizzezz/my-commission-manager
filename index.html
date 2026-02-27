@@ -304,7 +304,7 @@
 
   <script>
     // --- CONFIGURATION ---
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzNlol8pij0YL2rZIIRiPB6IeNmeI2f8zKBJoHGlL2MrBkxuIx_NyAu_vgKfR-RE_rU/exec";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxSFY9zHlnCIr1b_4Oh2-S44xgj3y8B7GiYBomj_u7BZ501NNKmmB2TnXnnvR0drYND/exec";
 
     const COMMISSION_TYPES = [
       { id: 'mini-chibi', name: 'Mini Chibi (Full Body)', basePrice: 180 },
@@ -534,8 +534,10 @@
       document.getElementById('receiptDeposit').innerText = Math.ceil(total / 2);
       
       const multiplierNote = document.getElementById('receiptMultiplierNote');
-      if (state.multiplier > 1) {
-        multiplierNote.innerText = `*ราคารวมตัวคูณ x${state.multiplier} แล้ว`;
+      if (state.multiplier === 1.5) {
+        multiplierNote.innerText = `*ราคารวม GiveAWay (x1.5) แล้ว`;
+      } else if (state.multiplier === 2) {
+        multiplierNote.innerText = `*ราคารวมเชิงพาณิชย์ (x2) แล้ว`;
       } else {
         multiplierNote.innerText = '';
       }
@@ -781,9 +783,14 @@
                   ${order.contactType}
                 </div>
               </div>
-              <select onchange="updateOrderStatus('${order.id}', this.value)" class="status-badge ${statusColor} outline-none cursor-pointer text-center">
-                ${statusOptions}
-              </select>
+              <div class="flex items-center gap-2">
+                <select onchange="updateOrderStatus('${order.id}', this.value)" class="status-badge ${statusColor} outline-none cursor-pointer text-center">
+                  ${statusOptions}
+                </select>
+                <button onclick="deleteOrder('${order.id}')" class="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="ลบคิว">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </div>
             </div>
             
             <div class="text-sm mb-3 text-bakery-text/80 line-clamp-1">
@@ -854,6 +861,32 @@
       } catch (error) {
         console.error("Error updating status:", error);
         alert('เกิดข้อผิดพลาดในการอัปเดตสถานะใน Google Sheets');
+        loadDataFromSheet(); // Revert on error
+      }
+    }
+
+    async function deleteOrder(id) {
+      if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการลบคิวนี้? ข้อมูลจะถูกลบออกจาก Google Sheets ด้วย')) {
+        return;
+      }
+
+      // Optimistic delete
+      state.queue = state.queue.filter(o => o.id !== id);
+      state.archive = state.archive.filter(o => o.id !== id);
+      
+      renderQueue();
+      calculateTotalRevenue();
+
+      try {
+        await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'DELETE_ORDER', id: id })
+        });
+      } catch (error) {
+        console.error("Error deleting order:", error);
+        alert('เกิดข้อผิดพลาดในการลบคิวใน Google Sheets');
         loadDataFromSheet(); // Revert on error
       }
     }
