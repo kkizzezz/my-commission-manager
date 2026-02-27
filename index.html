@@ -144,7 +144,7 @@
             <i data-lucide="plus" class="w-5 h-5 text-bakery-accent"></i>
             ส่วนเสริม (Add-ons)
           </h2>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label class="block text-sm font-medium mb-1">พร็อพเล็ก (+10)</label>
               <input type="number" id="propSmall" min="0" value="0" class="w-full p-2 border border-bakery-border rounded-lg bg-bakery-subtle/50 focus:ring-2 focus:ring-bakery-accent outline-none">
@@ -156,6 +156,10 @@
             <div>
               <label class="block text-sm font-medium mb-1">ออกแบบชุด/อื่นๆ</label>
               <input type="number" id="customDesignPrice" min="0" value="0" class="w-full p-2 border border-bakery-border rounded-lg bg-bakery-subtle/50 focus:ring-2 focus:ring-bakery-accent outline-none">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">งานเร่ง (+100)</label>
+              <input type="number" id="rushJob" min="0" value="0" class="w-full p-2 border border-bakery-border rounded-lg bg-bakery-subtle/50 focus:ring-2 focus:ring-bakery-accent outline-none">
             </div>
           </div>
         </div>
@@ -344,7 +348,7 @@
       deadline: '',
       selectedItems: [],
       multiplier: 1,
-      addOns: { propSmall: 0, propLarge: 0, customDesignPrice: 0 },
+      addOns: { propSmall: 0, propLarge: 0, customDesignPrice: 0, rushJob: 0 },
       queue: [],
       archive: [],
       activeTab: 'queue',
@@ -373,6 +377,7 @@
       document.getElementById('propSmall').addEventListener('input', (e) => { state.addOns.propSmall = parseInt(e.target.value) || 0; updateReceipt(); });
       document.getElementById('propLarge').addEventListener('input', (e) => { state.addOns.propLarge = parseInt(e.target.value) || 0; updateReceipt(); });
       document.getElementById('customDesignPrice').addEventListener('input', (e) => { state.addOns.customDesignPrice = parseInt(e.target.value) || 0; updateReceipt(); });
+      document.getElementById('rushJob').addEventListener('input', (e) => { state.addOns.rushJob = parseInt(e.target.value) || 0; updateReceipt(); });
     }
 
     // --- RENDER FUNCTIONS ---
@@ -476,7 +481,7 @@
       const container = document.getElementById('receiptItemsContainer');
       container.innerHTML = '';
       
-      if (state.selectedItems.length === 0 && state.addOns.propSmall === 0 && state.addOns.propLarge === 0 && state.addOns.customDesignPrice === 0) {
+      if (state.selectedItems.length === 0 && state.addOns.propSmall === 0 && state.addOns.propLarge === 0 && state.addOns.customDesignPrice === 0 && state.addOns.rushJob === 0) {
         container.innerHTML = '<div class="text-center text-bakery-text/50 text-xs py-2">No items</div>';
       } else {
         state.selectedItems.forEach(item => {
@@ -526,6 +531,14 @@
             </div>
           `;
         }
+        if (state.addOns.rushJob > 0) {
+          container.innerHTML += `
+            <div class="flex justify-between items-start text-sm">
+              <div class="text-bakery-text/80">งานเร่ง x${state.addOns.rushJob}</div>
+              <div class="font-medium">${state.addOns.rushJob * 100}฿</div>
+            </div>
+          `;
+        }
       }
       
       // Update Total
@@ -571,7 +584,7 @@
         }
       });
 
-      total += (state.addOns.propSmall * 10) + (state.addOns.propLarge * 20) + state.addOns.customDesignPrice;
+      total += (state.addOns.propSmall * 10) + (state.addOns.propLarge * 20) + state.addOns.customDesignPrice + (state.addOns.rushJob * 100);
       return total;
     }
 
@@ -711,13 +724,14 @@
         state.clientName = '';
         state.deadline = '';
         state.selectedItems = [];
-        state.addOns = { propSmall: 0, propLarge: 0, customDesignPrice: 0 };
+        state.addOns = { propSmall: 0, propLarge: 0, customDesignPrice: 0, rushJob: 0 };
         
         document.getElementById('clientName').value = '';
         document.getElementById('deadline').value = '';
         document.getElementById('propSmall').value = '0';
         document.getElementById('propLarge').value = '0';
         document.getElementById('customDesignPrice').value = '0';
+        document.getElementById('rushJob').value = '0';
         
         renderSelectedItems();
         updateReceipt();
