@@ -85,7 +85,6 @@
       border: 1px solid;
     }
   </style>
-<link rel="stylesheet" href="/index.css">
 </head>
 <body class="min-h-screen p-4 md:p-8">
   <div class="max-w-7xl mx-auto space-y-8">
@@ -169,8 +168,8 @@
           </h2>
           <div class="grid grid-cols-3 gap-3">
             <button onclick="setMultiplier(1)" id="btn-mul-1" class="p-3 rounded-xl border-2 border-bakery-accent bg-bakery-accent text-white font-medium transition-colors">x1 (ปกติ)</button>
-            <button onclick="setMultiplier(1.5)" id="btn-mul-1.5" class="p-3 rounded-xl border-2 border-bakery-border text-bakery-text hover:border-bakery-accent transition-colors">x1.5 (พาณิชย์)</button>
-            <button onclick="setMultiplier(2)" id="btn-mul-2" class="p-3 rounded-xl border-2 border-bakery-border text-bakery-text hover:border-bakery-accent transition-colors">x2 (ลิขสิทธิ์)</button>
+            <button onclick="setMultiplier(1.5)" id="btn-mul-1.5" class="p-3 rounded-xl border-2 border-bakery-border text-bakery-text hover:border-bakery-accent transition-colors">x1.5 (GiveAWay)</button>
+            <button onclick="setMultiplier(2)" id="btn-mul-2" class="p-3 rounded-xl border-2 border-bakery-border text-bakery-text hover:border-bakery-accent transition-colors">x2 (เชิงพาณิชย์)</button>
           </div>
         </div>
 
@@ -203,8 +202,12 @@
           <div class="p-4 bg-bakery-subtle rounded-xl flex justify-center">
             <div id="receiptContent" class="zigzag-border p-8 w-full max-w-sm">
               <div class="text-center mb-6">
-                <h3 class="text-2xl font-bold text-bakery-accent mb-1">COMMISSION</h3>
-                <p class="text-sm text-bakery-text/70">RECEIPT</p>
+                <h3 class="text-3xl font-bold text-bakery-accent mb-2" style="font-family: 'Ramsina', cursive, sans-serif;">COMMISSION</h3>
+                <div class="flex items-center justify-center gap-3">
+                  <div class="h-px bg-bakery-accent w-12"></div>
+                  <p class="text-sm text-bakery-text/70 tracking-widest font-medium">RECEIPT</p>
+                  <div class="h-px bg-bakery-accent w-12"></div>
+                </div>
               </div>
 
               <div class="space-y-2 mb-6 text-sm border-b border-dashed border-bakery-border pb-4">
@@ -301,7 +304,7 @@
 
   <script>
     // --- CONFIGURATION ---
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyAMZZSeYs-RqSNOBzMBrsKPNcumlWb7IZ07kkY9GibRZj3JjjTAz7BOhzYHqG2uoQ/exec";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxNIycJfoD-08NGnuvuPlyIJMy5xAdFUzdzjp-mkXABisG6ignNUhogtOv6YFSp8seH/exec";
 
     const COMMISSION_TYPES = [
       { id: 'mini-chibi', name: 'Mini Chibi (Full Body)', basePrice: 180 },
@@ -854,6 +857,5 @@
       }
     }
   </script>
-<script type="module" src="/index.tsx"></script>
 </body>
 </html>
