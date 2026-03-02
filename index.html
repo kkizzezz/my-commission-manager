@@ -5,6 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Commission Manager</title>
   
+  <script>
+    // Prevent libraries from overwriting window.fetch
+    Object.defineProperty(window, 'fetch', {
+      writable: false,
+      configurable: false
+    });
+  </script>
+  
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   
@@ -12,7 +20,8 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   
   <!-- HTML to Image -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
+
   
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -700,9 +709,9 @@
 
     function saveAsImage() {
       const node = document.getElementById('receiptContent');
-      window.htmlToImage.toPng(node, {
-        backgroundColor: '#FFFFFF',
-        pixelRatio: 2,
+      // Using dom-to-image instead of html-to-image to avoid fetch polyfill issues
+      window.domtoimage.toPng(node, {
+        bgcolor: '#FFFFFF',
         style: { transform: 'scale(1)', margin: '0' } // Fix right-side cropping
       })
       .then(function (dataUrl) {
