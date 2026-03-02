@@ -87,15 +87,28 @@
   </style>
 </head>
 <body class="min-h-screen p-4 md:p-8">
-  <div class="max-w-7xl mx-auto space-y-8">
+  <div class="max-w-7xl mx-auto space-y-6">
     
     <!-- Header -->
-    <header class="text-center space-y-4">
+    <header class="text-center space-y-4 mb-4">
       <h1 class="text-4xl md:text-5xl font-bold text-bakery-accent tracking-tight">Commission Manager</h1>
       <p class="text-bakery-text/80 text-lg">ระบบจัดการคิวและคำนวณราคาคอมมิชชัน</p>
     </header>
 
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <!-- Main Navigation Tabs -->
+    <div class="flex flex-wrap justify-center gap-4 mb-8">
+      <button id="nav-receipt" onclick="switchMainTab('receipt')" class="px-6 py-3 rounded-full font-bold bg-bakery-accent text-white shadow-md transition-all flex items-center gap-2">
+        <i data-lucide="receipt" class="w-5 h-5"></i> สร้างใบเสร็จ
+      </button>
+      <button id="nav-queue" onclick="switchMainTab('queue')" class="px-6 py-3 rounded-full font-bold bg-white text-bakery-text border border-bakery-border hover:border-bakery-accent transition-all flex items-center gap-2">
+        <i data-lucide="list-todo" class="w-5 h-5"></i> จัดการคิว & รายรับ
+      </button>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VIEW 1: สร้างใบเสร็จ (RECEIPT MAKER) -->
+    <!-- ========================================== -->
+    <div id="view-receipt" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
       
       <!-- Left Column: Form -->
       <div class="lg:col-span-7 space-y-6">
@@ -190,11 +203,11 @@
 
       </div>
 
-      <!-- Right Column: Receipt & Queue -->
+      <!-- Right Column: Receipt -->
       <div class="lg:col-span-5 space-y-6">
         
         <!-- Receipt Card -->
-        <div class="bg-bakery-card rounded-2xl shadow-sm border border-bakery-border p-6">
+        <div class="bg-bakery-card rounded-2xl shadow-sm border border-bakery-border p-6 sticky top-8">
           <div class="flex justify-between items-center mb-4">
             <h2 class="text-xl font-semibold">ใบเสร็จ</h2>
             <button onclick="saveAsImage()" class="flex items-center gap-2 px-3 py-1.5 bg-bakery-subtle hover:bg-bakery-border text-bakery-text rounded-lg transition-colors text-sm font-medium">
@@ -267,6 +280,16 @@
           </button>
         </div>
 
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VIEW 2: จัดการคิว & รายรับ (QUEUE & REVENUE) -->
+    <!-- ========================================== -->
+    <div id="view-queue" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-8">
+      
+      <!-- Left Column: Queue -->
+      <div class="lg:col-span-8 space-y-6">
         <!-- Queue Section -->
         <div class="bg-bakery-card rounded-2xl shadow-sm border border-bakery-border p-6">
           <div class="flex justify-between items-center mb-4">
@@ -284,16 +307,19 @@
             <button onclick="setTab('archive')" id="tabArchive" class="px-4 py-2 font-medium text-bakery-text/50 hover:text-bakery-text">ประวัติ (Archive)</button>
           </div>
 
-          <div id="queueContainer" class="space-y-3 max-h-[400px] overflow-y-auto pr-2">
+          <div id="queueContainer" class="space-y-3 max-h-[600px] overflow-y-auto pr-2">
             <div class="text-center py-8 text-bakery-text/50 flex flex-col items-center gap-2">
               <i data-lucide="loader-2" class="w-6 h-6 animate-spin"></i>
               กำลังโหลดข้อมูล...
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Revenue Summary (Moved below queue) -->
-        <div class="bg-bakery-card rounded-2xl shadow-sm border border-bakery-border p-6 mt-6">
+      <!-- Right Column: Revenue -->
+      <div class="lg:col-span-4 space-y-6">
+        <!-- Revenue Summary -->
+        <div class="bg-bakery-card rounded-2xl shadow-sm border border-bakery-border p-6 sticky top-8">
           <div class="flex items-center gap-2 mb-4">
             <i data-lucide="trending-up" class="w-5 h-5 text-bakery-accent"></i>
             <h2 class="text-xl font-semibold">รายรับแยกตามเดือน</h2>
@@ -302,9 +328,10 @@
             <div class="text-center py-4 text-bakery-text/50">กำลังคำนวณ...</div>
           </div>
         </div>
-
       </div>
+
     </div>
+
   </div>
 
   <script>
@@ -369,6 +396,31 @@
       // Set today's date in receipt
       document.getElementById('receiptDate').innerText = new Date().toLocaleDateString('th-TH');
     });
+
+    // --- NAVIGATION ---
+    function switchMainTab(tab) {
+      const viewReceipt = document.getElementById('view-receipt');
+      const viewQueue = document.getElementById('view-queue');
+      const navReceipt = document.getElementById('nav-receipt');
+      const navQueue = document.getElementById('nav-queue');
+
+      if (tab === 'receipt') {
+        viewReceipt.classList.remove('hidden');
+        viewQueue.classList.add('hidden');
+        
+        navReceipt.className = "px-6 py-3 rounded-full font-bold bg-bakery-accent text-white shadow-md transition-all flex items-center gap-2";
+        navQueue.className = "px-6 py-3 rounded-full font-bold bg-white text-bakery-text border border-bakery-border hover:border-bakery-accent transition-all flex items-center gap-2";
+      } else {
+        viewReceipt.classList.add('hidden');
+        viewQueue.classList.remove('hidden');
+        
+        navQueue.className = "px-6 py-3 rounded-full font-bold bg-bakery-accent text-white shadow-md transition-all flex items-center gap-2";
+        navReceipt.className = "px-6 py-3 rounded-full font-bold bg-white text-bakery-text border border-bakery-border hover:border-bakery-accent transition-all flex items-center gap-2";
+        
+        // Refresh data when opening queue tab just in case
+        loadDataFromSheet();
+      }
+    }
 
     // --- EVENT LISTENERS ---
     function setupEventListeners() {
@@ -745,7 +797,9 @@
         updateReceipt();
         
         alert('ส่งเข้าคิวเรียบร้อยแล้ว!');
-        setTimeout(loadDataFromSheet, 1500);
+        
+        // Switch to queue tab automatically
+        switchMainTab('queue');
         
       } catch (error) {
         console.error("Error syncing data:", error);
