@@ -333,6 +333,7 @@
     ];
 
     const STATUS_COLORS = {
+      "รอชำระเงิน": "bg-[#FFDAB9] text-[#8B4513] border-[#F4A460]",
       "รอชำระมัดจำ": "bg-[#FFB6C1] text-[#8B0000] border-[#FF69B4]",
       "บรีฟงาน": "bg-[#FFE4E1] text-[#CD5C5C] border-[#FFB6C1]",
       "ร่างภาพ": "bg-[#FFEBCD] text-[#D2691E] border-[#F5DEB3]",
@@ -710,7 +711,7 @@
         totalPrice: calculateTotal(),
         date: new Date().toISOString(),
         deadline: state.deadline,
-        status: "รอชำระมัดจำ"
+        status: "รอชำระเงิน"
       };
 
       try {
