@@ -184,6 +184,22 @@
                 ไม่รับงานเร่ง
               </button>
             </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">CustomChar (+50-100)</label>
+              <input type="number" id="customCharPrice" min="0" value="0" class="w-full p-2 border border-bakery-border rounded-lg bg-bakery-subtle/50 focus:ring-2 focus:ring-bakery-accent outline-none">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Rough color (x0.7)</label>
+              <button id="btnRoughColor" onclick="toggleRoughColor()" class="w-full p-2 border-2 border-bakery-border rounded-lg bg-bakery-subtle/50 text-bakery-text hover:border-bakery-accent transition-colors font-medium">
+                ไม่รับ
+              </button>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">เส้นเปล่า (x0.5)</label>
+              <button id="btnLineart" onclick="toggleLineart()" class="w-full p-2 border-2 border-bakery-border rounded-lg bg-bakery-subtle/50 text-bakery-text hover:border-bakery-accent transition-colors font-medium">
+                ไม่รับ
+              </button>
+            </div>
           </div>
         </div>
 
@@ -363,10 +379,10 @@
         { label: '10 รูป', price: 2400 }
       ]},
       { id: 'ych-yeh', name: 'YCH Yeh!', basePrice: 100 },
+      { id: 'ych', name: 'YCH', isCustom: true },
       { id: 'reactive-gif', name: 'Reactive GIF', basePrice: 500, noMultiplier: true },
       { id: 'logo-typo', name: 'Logo / Typo', basePrice: 1000, hasAiOption: true, noMultiplier: true },
       { id: 'video-pv', name: 'Video / PV', isCustom: true, noMultiplier: true },
-      { id: 'ych', name: 'YCH', isCustom: true },
     ];
 
     const STATUS_COLORS = {
@@ -388,7 +404,7 @@
       deadline: '',
       selectedItems: [],
       multiplier: 1,
-      addOns: { propSmall: 0, propLarge: 0, customDesignPrice: 0, rushJob: 0 },
+      addOns: { propSmall: 0, propLarge: 0, customDesignPrice: 0, rushJob: 0, customCharPrice: 0, roughColor: false, lineartOnly: false },
       queue: [],
       archive: [],
       activeTab: 'queue',
@@ -442,6 +458,7 @@
       document.getElementById('propSmall').addEventListener('input', (e) => { state.addOns.propSmall = parseInt(e.target.value) || 0; updateReceipt(); });
       document.getElementById('propLarge').addEventListener('input', (e) => { state.addOns.propLarge = parseInt(e.target.value) || 0; updateReceipt(); });
       document.getElementById('customDesignPrice').addEventListener('input', (e) => { state.addOns.customDesignPrice = parseInt(e.target.value) || 0; updateReceipt(); });
+      document.getElementById('customCharPrice').addEventListener('input', (e) => { state.addOns.customCharPrice = parseInt(e.target.value) || 0; updateReceipt(); });
     }
 
     // --- RENDER FUNCTIONS ---
@@ -545,7 +562,7 @@
       const container = document.getElementById('receiptItemsContainer');
       container.innerHTML = '';
       
-      if (state.selectedItems.length === 0 && state.addOns.propSmall === 0 && state.addOns.propLarge === 0 && state.addOns.customDesignPrice === 0 && state.addOns.rushJob === 0) {
+      if (state.selectedItems.length === 0 && state.addOns.propSmall === 0 && state.addOns.propLarge === 0 && state.addOns.customDesignPrice === 0 && state.addOns.rushJob === 0 && state.addOns.customCharPrice === 0 && !state.addOns.roughColor && !state.addOns.lineartOnly) {
         container.innerHTML = '<div class="text-center text-bakery-text/50 text-xs py-2">No items</div>';
       } else {
         state.selectedItems.forEach(item => {
@@ -556,6 +573,9 @@
           if (item.isFullBody) { itemPrice *= 2; details.push('Full Body'); }
           if (item.hasAiFile) { itemPrice += 300; details.push('+ .ai file'); }
           if (item.customPrice) itemPrice = item.customPrice;
+          
+          if (state.addOns.roughColor) { itemPrice *= 0.7; details.push('Rough color'); }
+          if (state.addOns.lineartOnly) { itemPrice *= 0.5; details.push('เส้นเปล่า'); }
           
           let displayPrice = item.noMultiplier ? itemPrice : itemPrice * state.multiplier;
           
@@ -603,6 +623,14 @@
             </div>
           `;
         }
+        if (state.addOns.customCharPrice > 0) {
+          container.innerHTML += `
+            <div class="flex justify-between items-start text-sm">
+              <div class="text-bakery-text/80">CustomChar (Detailed Brief)</div>
+              <div class="font-medium">${state.addOns.customCharPrice}฿</div>
+            </div>
+          `;
+        }
       }
       
       // Update Total
@@ -644,6 +672,9 @@
         if (item.hasAiFile) itemPrice += 300;
         if (item.customPrice) itemPrice = item.customPrice;
 
+        if (state.addOns.roughColor) itemPrice *= 0.7;
+        if (state.addOns.lineartOnly) itemPrice *= 0.5;
+
         if (item.noMultiplier) {
           total += itemPrice;
         } else {
@@ -651,7 +682,7 @@
         }
       });
 
-      total += (state.addOns.propSmall * 10) + (state.addOns.propLarge * 20) + state.addOns.customDesignPrice + (state.addOns.rushJob ? 100 : 0);
+      total += (state.addOns.propSmall * 10) + (state.addOns.propLarge * 20) + state.addOns.customDesignPrice + state.addOns.customCharPrice + (state.addOns.rushJob ? 100 : 0);
       return total;
     }
 
@@ -792,18 +823,21 @@
         state.clientName = '';
         state.deadline = '';
         state.selectedItems = [];
-        state.addOns = { propSmall: 0, propLarge: 0, customDesignPrice: 0, rushJob: 0 };
+        state.addOns = { propSmall: 0, propLarge: 0, customDesignPrice: 0, rushJob: 0, customCharPrice: 0, roughColor: false, lineartOnly: false };
         
         document.getElementById('clientName').value = '';
         document.getElementById('deadline').value = '';
         document.getElementById('propSmall').value = '0';
         document.getElementById('propLarge').value = '0';
         document.getElementById('customDesignPrice').value = '0';
+        document.getElementById('customCharPrice').value = '0';
         
         // Reset rush job button
         const btnRush = document.getElementById('btnRushJob');
         btnRush.className = "w-full p-2 border-2 border-bakery-border rounded-lg bg-bakery-subtle/50 text-bakery-text hover:border-bakery-accent transition-colors font-medium";
         btnRush.innerText = "ไม่รับงานเร่ง";
+
+        updateStyleButtons();
         
         renderSelectedItems();
         updateReceipt();
@@ -931,6 +965,40 @@
       }
       
       updateReceipt();
+    }
+
+    function toggleRoughColor() {
+      state.addOns.roughColor = !state.addOns.roughColor;
+      if (state.addOns.roughColor) state.addOns.lineartOnly = false;
+      updateStyleButtons();
+      updateReceipt();
+    }
+
+    function toggleLineart() {
+      state.addOns.lineartOnly = !state.addOns.lineartOnly;
+      if (state.addOns.lineartOnly) state.addOns.roughColor = false;
+      updateStyleButtons();
+      updateReceipt();
+    }
+
+    function updateStyleButtons() {
+      const btnRough = document.getElementById('btnRoughColor');
+      if (state.addOns.roughColor) {
+        btnRough.className = "w-full p-2 border-2 border-bakery-accent rounded-lg bg-bakery-accent text-white transition-colors font-medium";
+        btnRough.innerText = "Rough color (x0.7)";
+      } else {
+        btnRough.className = "w-full p-2 border-2 border-bakery-border rounded-lg bg-bakery-subtle/50 text-bakery-text hover:border-bakery-accent transition-colors font-medium";
+        btnRough.innerText = "ไม่รับ";
+      }
+
+      const btnLineart = document.getElementById('btnLineart');
+      if (state.addOns.lineartOnly) {
+        btnLineart.className = "w-full p-2 border-2 border-bakery-accent rounded-lg bg-bakery-accent text-white transition-colors font-medium";
+        btnLineart.innerText = "เส้นเปล่า (x0.5)";
+      } else {
+        btnLineart.className = "w-full p-2 border-2 border-bakery-border rounded-lg bg-bakery-subtle/50 text-bakery-text hover:border-bakery-accent transition-colors font-medium";
+        btnLineart.innerText = "ไม่รับ";
+      }
     }
 
     async function updateOrderStatus(id, newStatus) {
