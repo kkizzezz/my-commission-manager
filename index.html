@@ -535,6 +535,13 @@
           `;
         }
 
+        optionsHtml += `
+          <div class="flex items-center gap-2 w-full mt-1">
+            <span class="text-sm font-medium">จำนวน:</span>
+            <input type="number" min="1" class="w-16 p-1.5 text-sm border border-bakery-border rounded bg-white outline-none" value="${item.quantity || 1}" onchange="updateItemQuantity(${index}, this.value)">
+          </div>
+        `;
+
         itemDiv.innerHTML = `
           <button onclick="removeItem(${index})" class="absolute top-3 right-3 p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
             <i data-lucide="trash-2" class="w-4 h-4"></i>
@@ -578,11 +585,12 @@
           if (state.addOns.lineartOnly) { itemPrice *= 0.5; details.push('เส้นเปล่า'); }
           
           let displayPrice = item.noMultiplier ? itemPrice : itemPrice * state.multiplier;
+          displayPrice = displayPrice * (item.quantity || 1);
           
           container.innerHTML += `
             <div class="flex justify-between items-start">
               <div>
-                <div class="font-medium">${item.name}</div>
+                <div class="font-medium">${item.name} ${item.quantity > 1 ? `<span class="text-bakery-accent text-sm">x${item.quantity}</span>` : ''}</div>
                 ${details.length > 0 ? `<div class="text-xs text-bakery-text/60">${details.join(', ')}</div>` : ''}
               </div>
               <div class="font-medium">${displayPrice}฿</div>
@@ -676,9 +684,9 @@
         if (state.addOns.lineartOnly) itemPrice *= 0.5;
 
         if (item.noMultiplier) {
-          total += itemPrice;
+          total += itemPrice * (item.quantity || 1);
         } else {
-          total += itemPrice * state.multiplier;
+          total += itemPrice * state.multiplier * (item.quantity || 1);
         }
       });
 
@@ -695,6 +703,7 @@
         name: type.name,
         basePrice: type.basePrice || 0,
         noMultiplier: type.noMultiplier || false,
+        quantity: 1
       };
 
       if (type.options) {
@@ -736,6 +745,12 @@
 
     function updateItemCustomPrice(index, value) {
       state.selectedItems[index].customPrice = parseInt(value) || 0;
+      updateReceipt();
+    }
+
+    function updateItemQuantity(index, value) {
+      const qty = parseInt(value);
+      state.selectedItems[index].quantity = qty > 0 ? qty : 1;
       updateReceipt();
     }
 
@@ -1068,15 +1083,22 @@
     function calculateTotalRevenue() {
       const monthlyRevenue = {};
 
+      // Always include current month
+      const now = new Date();
+      const currentSortKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      const currentDisplayLabel = now.toLocaleDateString('th-TH', { month: 'long', year: 'numeric' });
+      monthlyRevenue[currentSortKey] = { label: currentDisplayLabel, total: 0 };
+
       const processOrder = (order) => {
         if (!order.date) return;
         const date = new Date(order.date);
-        const monthYear = date.toLocaleDateString('th-TH', { month: 'long', year: 'numeric' });
+        const sortKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        const displayLabel = date.toLocaleDateString('th-TH', { month: 'long', year: 'numeric' });
         
-        if (!monthlyRevenue[monthYear]) {
-          monthlyRevenue[monthYear] = 0;
+        if (!monthlyRevenue[sortKey]) {
+          monthlyRevenue[sortKey] = { label: displayLabel, total: 0 };
         }
-        monthlyRevenue[monthYear] += Number(order.totalPrice) || 0;
+        monthlyRevenue[sortKey].total += Number(order.totalPrice) || 0;
       };
 
       // Sum from archive
@@ -1089,17 +1111,15 @@
       });
       
       const container = document.getElementById('revenueContainer');
-      if (Object.keys(monthlyRevenue).length === 0) {
-        container.innerHTML = '<div class="text-center py-4 text-bakery-text/50">ยังไม่มีรายรับ</div>';
-        return;
-      }
+      const sortedMonths = Object.keys(monthlyRevenue).sort().reverse();
 
       container.innerHTML = '';
-      for (const [month, total] of Object.entries(monthlyRevenue)) {
+      for (const key of sortedMonths) {
+        const data = monthlyRevenue[key];
         container.innerHTML += `
           <div class="flex justify-between items-center p-3 border border-bakery-border rounded-xl bg-bakery-subtle/30">
-            <span class="font-medium">${month}</span>
-            <span class="font-bold text-bakery-accent">${total.toLocaleString()} ฿</span>
+            <span class="font-medium">${data.label}</span>
+            <span class="font-bold text-bakery-accent">${data.total.toLocaleString()} ฿</span>
           </div>
         `;
       }
